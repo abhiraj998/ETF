@@ -1,11 +1,46 @@
 import streamlit as st
 import requests
+import openai
+import re
+ 
  
 def ytdName(name):
-    api_key = "7fd525b1eb69a710a24dd46dc1080e99"
-    url = f"https://financialmodelingprep.com/api/v4/stock_peers?symbol={name}&apikey={api_key}"
-    response = requests.get(url)
-    return response.json()
+    api_key = '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'
+    openai.api_key = api_key
+    prompt_text = f"give TOP 3 alternatives of {name} ETF, strictly within the same sector as {name}, return the results as a list only and i need only ticker names"
+    response = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",
+        messages=[
+            {"role": "system", "content": "give ticker name only and consider the alternatives within the same sector"},
+            {"role": "user", "content": prompt_text}
+        ],
+        temperature=0.1
+    )
+    generated_text = response['choices'][0]['message']['content']
+    print(generated_text)
+    matches = re.sub(r'\d+\.?', '', generated_text).split('\n')
+    print(type(matches))
+    return matches
+ 
+ 
+ 
+def Sector(sector):
+    api_key = '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'
+    openai.api_key = api_key
+    prompt_text = f"return only the sector name for {sector} ETF?"
+    response = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",
+        messages=[
+            {"role": "system", "content": "give the answer in the following format 'the name etf focuses on sector name'"},
+            {"role": "user", "content": prompt_text}
+        ],
+        temperature=0.5
+    )
+    generated_text = response['choices'][0]['message']['content']
+    pattern = r'(?<=focuses on the\s)(.*)'
+    match = re.search(pattern, generated_text)
+ 
+    return  match.group(1)
  
 def ytdValue(ytdName):
     api_key = "7fd525b1eb69a710a24dd46dc1080e99"
@@ -37,56 +72,65 @@ def etfname(userinput):
  
  
 def main():
-    st.title('ETF FINDER')
-    user_input = st.text_input('Enter the ETF Name:')
+    st.title('ETF ADVISORY')
+    user_input = st.text_input('Enter only ETF Name:')
     ytd_name=""
     if st.button('Submit'):
        
-            if len(user_input) >= 5:
+        if len(user_input) >= 5:
                 try:
                     user_input = etfname(user_input)[0]['symbol']
                 except Exception as e:
                     st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
-            try:        
-                ytd_value_in = ytdValue(user_input)[0]['ytd']
-                st.success(f"YTD for {user_input} is {ytd_value_in}%, it can be compared with below ")
-            except Exception as e:
-                k=e    
-            try:
-                ytd_name = ytdName(user_input)[0]['peersList']
-            except Exception as e:
-                st.error(f"Unable to find the alternatives for {user_input} ticker name.")
-           
-            table_data = []
-            if ytd_name:
-                yldlist=[]
-                for name in ytd_name[:3]:
-                    ytd_value =ytdValue(name)[0]['ytd']
-                   
-                    YTD_percentage=str(ytd_value)+"%"
-                    ytd_description = ytdDescription(name)[0]['description']
-                    table_data.append([name, YTD_percentage, ytd_description])
-                    yldlist.append([name, ytd_value, ytd_description])
-               
-                html_table = "<table><tr><th>YTD Name</th><th>YTD Value</th><th>Description</th></tr>"
-                for row in table_data[0:]:
-                    html_table += "<tr>"
-                    for cell in row:
-                        html_table += f"<td>{cell}</td>"
-                    html_table += "</tr>"
-                html_table += "</table>"
-                st.markdown(html_table, unsafe_allow_html=True)
-                max_row = max(yldlist, key=lambda x: x[1])
-
-
-                st.success(f"""Based on performance (YTD) , the best fund  is the "**{max_row[0]}**" with a return of "**{max_row[1]}%**" Year to date.
-                           
-                           
-\nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. TFO should not be responsible for any kind of Financials losses for the recommendation . The Platform is a part of TFO IT Operation and uses its own internal algorithms.
-\n
-\nFor any Complain please reach out to s.hameed@tfoco.com OR y.shabeeb@tfoco.com
-\nFor any Suggestion please reach out to s.suman@tfoco.com""")
        
+        try:        
+            ytd_value_in = round(ytdValue(user_input)[0]['ytd'],2)
+            st.success(f"""The YTD value for {user_input} is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")}. It can be compared with below """)
+        except Exception as e:
+            print(e)
+        try:
+            ytd_name = ytdName(user_input)
+        except Exception as e:
+            print(e)
+            st.error(f"Unable to find the alternatives for {user_input} ticker name.")
+       
+        table_data = []
+        if ytd_name:
+            yldlist=[]
+            for name in ytd_name:
+                ytd_value =(ytdValue(name.strip(" "))[0]['ytd'])
+                YTD_percentage=str(ytd_value)+"%"
+                ytd_Sector = Sector(name)
+                ytd_description = ytdDescription(name.strip(" "))[0]['description']
+                table_data.append([name.strip(" "), YTD_percentage,ytd_Sector, ytd_description])
+                yldlist.append([name.strip(" "), ytd_value, ytd_description])
+           
+            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>YTD Value</th><th>Sector</th><th>Description</th></tr>"
+            for row in table_data[0:]:
+                html_table += "<tr>"
+                for cell in row:
+                    html_table += f"<td>{cell}</td>"
+                html_table += "</tr>"
+            html_table += "</table>"
+            st.markdown(html_table, unsafe_allow_html=True)
+            max_row = max(yldlist, key=lambda x: x[1])
+            max_value = max(max_row[1], ytd_value_in)
+ 
+            if max_value == ytd_value_in:
+                ytd_final = user_input
+                ytd_value_final = max_value
+            else:
+                ytd_final = max_row[0]
+                ytd_value_final = max_value
+               
+ 
+            st.success(f"""
+            Based on performance (YTD) , the best fund  is the "**{ytd_final}**" with a return of "**{ytd_value_final}%**" Year to date.
+            \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. TFO should not be responsible for any kind of Financials losses for the recommendation . The Platform is a part of TFO IT Operation and uses its own internal algorithms.
+            \n
+            \nFor any Complain please reach out to s.hameed@tfoco.com OR y.shabeeb@tfoco.com
+            \nFor any Suggestion please reach out to s.suman@tfoco.com""")
+               
  
 if __name__ == "__main__":
     main()
