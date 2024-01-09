@@ -92,7 +92,7 @@ def main():
             ytd_name = ytdName(user_input)
         except Exception as e:
             print(e)
-            st.error(f"Unable to find the alternatives for {user_input} ticker name.")
+            st.error(f"Unable to find the alternatives for {user_input} ticker name. {e}")
        
         table_data = []
         if ytd_name:
