@@ -5,7 +5,7 @@ import re
  
  
 def ytdName(name):
-    api_key = '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'
+    api_key = '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'
     openai.api_key = api_key
     prompt_text = f"give TOP 3 alternatives of {name} ETF, strictly within the same sector as {name}, return the results as a list only and i need only ticker names"
     response = openai.ChatCompletion.create(
@@ -25,7 +25,7 @@ def ytdName(name):
  
  
 def Sector(sector):
-    api_key = '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'
+    api_key = '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'
     openai.api_key = api_key
     prompt_text = f"return only the sector name for {sector} ETF?"
     response = openai.ChatCompletion.create(
