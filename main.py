@@ -5,13 +5,13 @@ import os
 import re
 st.write(
     "Has environment variables been set:",
-    os.environ["api_key"] == st.secrets["api_key"]
+    os.environ["Api_key"] == st.secrets["Api_key"]
 )
 
 
 
  
-apiKey = os.environ.get("api_key")
+apiKey = os.environ.get("Api_key")
 print(apiKey)
  
 def ytdName(name):
