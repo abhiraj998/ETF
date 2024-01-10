@@ -1,11 +1,21 @@
 import streamlit as st
 import requests
 import openai
+import os
 import re
+st.write(
+    "Has environment variables been set:",
+    os.environ["api_key"] == st.secrets["api_key"]
+)
+
+
+
  
+apiKey = os.environ.get("api_key")
+print(apiKey)
  
 def ytdName(name):
-    api_key = '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'
+    api_key = apiKey
     openai.api_key = api_key
     prompt_text = f"give TOP 3 alternatives of {name} ETF, strictly within the same sector as {name}, return the results as a list only and i need only ticker names"
     response = openai.ChatCompletion.create(
@@ -25,7 +35,7 @@ def ytdName(name):
  
  
 def Sector(sector):
-    api_key = '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'
+    api_key = apiKey
     openai.api_key = api_key
     prompt_text = f"return only the sector name for {sector} ETF?"
     response = openai.ChatCompletion.create(
@@ -92,7 +102,7 @@ def main():
             ytd_name = ytdName(user_input)
         except Exception as e:
             print(e)
-            st.error(f"Unable to find the alternatives for {user_input} ticker name. {e}")
+            st.error(f"Unable to find the alternatives for {user_input} ticker name.")
        
         table_data = []
         if ytd_name:
@@ -102,10 +112,11 @@ def main():
                 YTD_percentage=str(ytd_value)+"%"
                 ytd_Sector = Sector(name)
                 ytd_description = ytdDescription(name.strip(" "))[0]['description']
-                table_data.append([name.strip(" "), YTD_percentage,ytd_Sector, ytd_description])
+                ytd_ISIN = ytdDescription(name.strip(" "))[0]['isin']
+                table_data.append([name.strip(" "), ytd_ISIN, YTD_percentage,ytd_Sector, ytd_description])
                 yldlist.append([name.strip(" "), ytd_value, ytd_description])
            
-            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>YTD Value</th><th>Sector</th><th>Description</th></tr>"
+            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>ISIN</th><th>YTD Value</th><th>Sector</th><th>Description</th></tr>"
             for row in table_data[0:]:
                 html_table += "<tr>"
                 for cell in row:
