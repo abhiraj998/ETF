@@ -4,12 +4,6 @@ import openai
 import os
 import re
 
-# "Has environment variables been set:"
-os.environ["Api_key"] == st.secrets["Api_key"]
-
-
-
- 
 apiKey = os.environ.get("Api_key")
 # print(apiKey)
 # apiKey = ""
