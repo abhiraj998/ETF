@@ -85,8 +85,8 @@ st.markdown(hide_st_style,unsafe_allow_html=True)
  
  
 def main():
-    st.title('ETF ADVISORY')
-    user_input = st.text_input('Enter only ETF Ticker:')
+    # st.title('ETF ADVISORY')
+    user_input = st.text_input('Enter only Ticker:')
     ytd_name=""
     if st.button('Submit'):
        
@@ -97,10 +97,10 @@ def main():
                     st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
        
         try:        
-            ytd_value_in = ytdValue(user_input)[0]['ytd']
+            ytd_value_in = ytdValue(user_input)[0]['1Y']
             Userisin = ytdDescription(user_input)[0]['isin']
             st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")} It can be compared with below """)
-            st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done from 02 Jan 2024</p>',unsafe_allow_html=True)
+            st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done for last 365 days</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
         try:
@@ -114,7 +114,7 @@ def main():
             yldlist=[]
             for name in ytd_name:
                 print(name)
-                ytd_value =(ytdValue(name.strip(" "))[0]['ytd'])
+                ytd_value =(ytdValue(name.strip(" "))[0]['1Y'])
                 YTD_percentage=str(ytd_value)+"%"
                 ytd_Sector = Sector(name)
                 ytd_description = ytdDescription(name.strip(" "))[0]['description']
@@ -122,7 +122,7 @@ def main():
                 table_data.append([name.strip(" "), ytd_ISIN, YTD_percentage,ytd_Sector, ytd_description])
                 yldlist.append([name.strip(" "), ytd_value, ytd_description])
            
-            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>ISIN</th><th>YTD Value</th><th>Sector</th><th>Description</th></tr>"
+            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>ISIN</th><th>Company Name</th><th>1 Year Performance</th><th>Sector</th><th>Description</th></tr>"
             for row in table_data[0:]:
                 html_table += "<tr>"
                 for cell in row:
@@ -143,10 +143,7 @@ def main():
  
             st.success(f"""
             Based on performance (YTD) , the best fund  is the "**{ytd_final}**" with a return of "**{ytd_value_final}%**" Year to date.
-            \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. TFO should not be responsible for any kind of Financials losses for the recommendation . The Platform is a part of TFO IT Operation and uses its own internal algorithms.
-            \n
-            \nFor any Complain please reach out to s.hameed@tfoco.com OR y.shabeeb@tfoco.com
-            \nFor any Suggestion please reach out to s.suman@tfoco.com""")
+            \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. """)
                
  
 if __name__ == "__main__":
