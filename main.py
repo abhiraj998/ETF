@@ -38,12 +38,12 @@ def Sector(sector):
             {"role": "system", "content": "give the answer strictly in the following format 'the name etf focuses on sector name"},
             {"role": "user", "content": prompt_text}
         ],
-        temperature=0.1
+        temperature=0.5
     )
     generated_text = response['choices'][0]['message']['content']
     pattern = r'(?<=focuses on\s)(.*)'
     match = re.search(pattern, generated_text)
-    st.write(match)
+    # st.write(match)
     return  match.group(1).lstrip("the")
  
 def ytdValue(ytdName):
