@@ -43,7 +43,7 @@ def Sector(sector):
     generated_text = response['choices'][0]['message']['content']
     pattern = r'(?<=focuses on\s)(.*)'
     match = re.search(pattern, generated_text)
- 
+    print(match)
     return  match.group(1).lstrip("the")
  
 def ytdValue(ytdName):
