@@ -3,10 +3,9 @@ import requests
 import openai
 import os
 import re
-st.write(
-    "Has environment variables been set:",
-    os.environ["Api_key"] == st.secrets["Api_key"]
-)
+
+# "Has environment variables been set:"
+os.environ["Api_key"] == st.secrets["Api_key"]
 
 
 
@@ -73,13 +72,13 @@ def etfname(userinput):
  
  
  
-hide_st_style="""
+hide_deploy_button_style = """
 <style>
-Mainenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-</style>"""
-st.markdown(hide_st_style,unsafe_allow_html=True)
+.st-emotion-cache-1wbqy5l.e17vllj40 { display: none !important; }
+ 
+</style>
+"""
+st.markdown(hide_deploy_button_style, unsafe_allow_html=True)
 
 
  
