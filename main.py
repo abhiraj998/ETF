@@ -5,14 +5,15 @@ import os
 import re
 st.write(
     "Has environment variables been set:",
-    os.environ["Api_key"] == st.secrets["Api_key"]
+    os.environ["api_key"] == st.secrets["api_key"]
 )
 
 
 
  
-apiKey = os.environ.get("Api_key")
-print(apiKey)
+apiKey = os.environ.get("api_key")
+# print(apiKey)
+# apiKey = ""
  
 def ytdName(name):
     api_key = apiKey
@@ -72,13 +73,15 @@ def etfname(userinput):
  
  
  
-# hide_st_style="""
-# <style>
-# #Mainenu {visibility: hidden;}
-# footer {visibility: hidden;}
-# header {visibility: hidden;}
-# </style>"""
-# st.markdown(hide_st_style,unsafe_allow_html=True)
+hide_st_style="""
+<style>
+Mainenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>"""
+st.markdown(hide_st_style,unsafe_allow_html=True)
+
+
  
  
 def main():
@@ -94,8 +97,9 @@ def main():
                     st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
        
         try:        
-            ytd_value_in = round(ytdValue(user_input)[0]['ytd'],2)
-            st.success(f"""The YTD value for {user_input} is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")}. It can be compared with below """)
+            ytd_value_in = ytdValue(user_input)[0]['ytd']
+            Userisin = ytdDescription(user_input)[0]['isin']
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")}. It can be compared with below """)
         except Exception as e:
             print(e)
         try:
