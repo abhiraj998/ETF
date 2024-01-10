@@ -79,7 +79,7 @@ st.markdown(hide_deploy_button_style, unsafe_allow_html=True)
  
 def main():
     st.title('ETF ADVISORY')
-    user_input = st.text_input('Enter only ETF Name:')
+    user_input = st.text_input('Enter only ETF Ticker:')
     ytd_name=""
     if st.button('Submit'):
        
@@ -93,6 +93,7 @@ def main():
             ytd_value_in = ytdValue(user_input)[0]['ytd']
             Userisin = ytdDescription(user_input)[0]['isin']
             st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")}. It can be compared with below """)
+            st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done from 02 Jan 2024</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
         try:
