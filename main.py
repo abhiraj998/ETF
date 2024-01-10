@@ -3,10 +3,17 @@ import requests
 import openai
 import os
 import re
+# st.write(
+#     "Has environment variables been set:",
+#     os.environ["api_key"] == st.secrets["api_key"]
+# )
 
-apiKey = os.environ.get("Api_key")
+
+
+ 
+apiKey = os.environ.get("api_key")
 # print(apiKey)
-# apiKey = ""
+
  
 def ytdName(name):
     api_key = apiKey
@@ -35,7 +42,7 @@ def Sector(sector):
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
         messages=[
-            {"role": "system", "content": "give the answer strictly in the following format 'the name etf focuses on sector name"},
+            {"role": "system", "content": "give the answer strictly in the following format 'the name etf focuses on sector name'"},
             {"role": "user", "content": prompt_text}
         ],
         temperature=0.5
@@ -43,8 +50,8 @@ def Sector(sector):
     generated_text = response['choices'][0]['message']['content']
     pattern = r'(?<=focuses on\s)(.*)'
     match = re.search(pattern, generated_text)
-    # st.write(match)
-    return  match.group(1).lstrip("the")
+    sectorname = match.group(1).lstrip("the ")
+    return  sectorname.capitalize()
  
 def ytdValue(ytdName):
     api_key = "7fd525b1eb69a710a24dd46dc1080e99"
@@ -66,13 +73,13 @@ def etfname(userinput):
  
  
  
-hide_deploy_button_style = """
+hide_st_style="""
 <style>
-.st-emotion-cache-1wbqy5l.e17vllj40 { display: none !important; }
- 
-</style>
-"""
-st.markdown(hide_deploy_button_style, unsafe_allow_html=True)
+Mainenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>"""
+st.markdown(hide_st_style,unsafe_allow_html=True)
 
 
  
@@ -92,20 +99,21 @@ def main():
         try:        
             ytd_value_in = ytdValue(user_input)[0]['ytd']
             Userisin = ytdDescription(user_input)[0]['isin']
-            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")}. It can be compared with below """)
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {Sector(user_input).replace(".",",")} It can be compared with below """)
             st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done from 02 Jan 2024</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
         try:
             ytd_name = ytdName(user_input)
         except Exception as e:
-            print(e)
+            # print(e)
             st.error(f"Unable to find the alternatives for {user_input} ticker name.")
        
         table_data = []
         if ytd_name:
             yldlist=[]
             for name in ytd_name:
+                print(name)
                 ytd_value =(ytdValue(name.strip(" "))[0]['ytd'])
                 YTD_percentage=str(ytd_value)+"%"
                 ytd_Sector = Sector(name)
