@@ -14,6 +14,7 @@ import re
 apiKey = os.environ.get("Api_key")
 # print(apiKey)
 
+
  
 def ytdName(name):
     api_key = apiKey
@@ -58,7 +59,8 @@ def ytdValue(ytdName):
     url = f"https://financialmodelingprep.com/api/v3/stock-price-change/{ytdName}?apikey={api_key}"
     response = requests.get(url)
     return response.json()
- 
+
+
 def ytdDescription(ytdValue):
     api_key = "7fd525b1eb69a710a24dd46dc1080e99"
     url = f"https://financialmodelingprep.com/api/v3/profile/{ytdValue}?apikey={api_key}"
@@ -114,12 +116,13 @@ def main():
             yldlist=[]
             for name in ytd_name:
                 print(name)
-                ytd_value =(ytdValue(name.strip(" "))[0]['1Y'])
+                ytd_value =ytdValue(name.strip(" "))[0]['1Y']
                 YTD_percentage=str(ytd_value)+"%"
                 ytd_Sector = Sector(name)
                 ytd_description = ytdDescription(name.strip(" "))[0]['description']
+                ytd_CompanyName = ytdDescription(name.strip(" "))[0]['companyName']
                 ytd_ISIN = ytdDescription(name.strip(" "))[0]['isin']
-                table_data.append([name.strip(" "), ytd_ISIN, YTD_percentage,ytd_Sector, ytd_description])
+                table_data.append([name.strip(" "), ytd_ISIN, ytd_CompanyName, YTD_percentage,ytd_Sector, ytd_description])
                 yldlist.append([name.strip(" "), ytd_value, ytd_description])
            
             html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>ISIN</th><th>Company Name</th><th>1 Year Performance</th><th>Sector</th><th>Description</th></tr>"
