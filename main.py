@@ -14,8 +14,6 @@ import re
 apiKey = os.environ.get("Api_key")
 # print(apiKey)
 
-
-
  
 def ytdName(name):
     api_key = apiKey
@@ -25,6 +23,23 @@ def ytdName(name):
         model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": "give ticker name only and consider the alternatives within the same sector, give"},
+            {"role": "user", "content": prompt_text}
+        ],
+        temperature=0.1
+    )
+    generated_text = response['choices'][0]['message']['content']
+    print(generated_text)
+    matches = re.sub(r'[\d+\.?]','', generated_text).split('\n')
+    return matches
+
+def MFPeers(name):
+    api_key = apiKey
+    openai.api_key = api_key
+    prompt_text = f"give TOP 3 alternatives of {name} mutual funds, strictly within the same sector as {name}, return the results as a list only and i need only ticker names"
+    response = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",
+        messages=[
+            {"role": "system", "content": "give ticker name only and consider the alternatives within the same sector."},
             {"role": "user", "content": prompt_text}
         ],
         temperature=0.1
@@ -72,6 +87,27 @@ def stock_sector(sector):
         model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": "give the answer strictly in the following format 'the name Stock focuses on sector name'"},
+            {"role": "user", "content": prompt_text}
+        ],
+        temperature=0.1
+    )
+    generated_text = response['choices'][0]['message']['content']
+    print("generated_text = ",generated_text)
+    pattern = re.compile(r'(?i)focuses\s(?:on\s(?:the\s)?)?(\w+(?:\s\w+)*)')
+    match = re.search(pattern, generated_text)
+    if match != None:
+        match = match.group(1).capitalize().strip(".")
+    print("match = ",match)
+    return match
+
+def mf_sector(sector):
+    api_key = apiKey
+    openai.api_key = api_key
+    prompt_text = f"return only the sector name for {sector} Stock?"
+    response = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",
+        messages=[
+            {"role": "system", "content": "give the answer strictly in the following format 'the name mutual fund focuses on sector name'"},
             {"role": "user", "content": prompt_text}
         ],
         temperature=0.1
@@ -132,7 +168,7 @@ def main():
     
     if st.button('ETF'):
        
-        if len(user_input) >= 5:
+        if len(user_input) > 5:
                 try:
                     user_input = etfname(user_input)[0]['symbol']
                 except Exception as e:
@@ -189,7 +225,68 @@ def main():
             st.success(f"""
             Based on performance (YTD) , the best fund  is the "**{ytd_final}**" with a return of "**{ytd_value_final}%**" Year to date.
             \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. """)
-               
+
+    if st.button('Mutual Fund'):
+        
+        if len(user_input) > 5:
+            try:
+                user_input = etfname(user_input)[0]['symbol']
+            except Exception as e:
+                st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
+
+        try:        
+            ytd_value_in = ytdValue(user_input)[0]['1Y']
+            Userisin = ytdDescription(user_input)[0]['isin']
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {mf_sector(user_input).replace(".",",")} It can be compared with below """)
+            st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done for last 365 days</p>',unsafe_allow_html=True)
+        except Exception as e:
+            print(e)
+        try:
+            ytd_name = MFPeers(user_input)
+        except Exception as e:
+            # print(e)
+            st.error(f"Unable to find the alternatives for {user_input} ticker name.")
+    
+        table_data = []
+        if ytd_name:
+            yldlist=[]
+            for name in ytd_name:
+                pattern=r'[^a-zA-Z0-9\s]+'
+                print(name)
+                name= re.sub(pattern,'', name)
+                print(name)
+                ytd_value =ytdValue(name.strip())[0]['1Y']
+                YTD_percentage=str(ytd_value)+"%"
+                ytd_Sector = mf_sector(name)
+                ytd_description = ytdDescription(name.strip())[0]['description']
+                ytd_CompanyName = ytdDescription(name.strip())[0]['companyName']
+                ytd_ISIN = ytdDescription(name.strip())[0]['isin']
+                table_data.append([name.strip(), ytd_ISIN, ytd_CompanyName, YTD_percentage,ytd_Sector, ytd_description])
+                yldlist.append([name.strip(), ytd_value, ytd_description])
+        
+            html_table = "<table><tr style='background:#B99855;color:#fff'><th>Ticker Name</th><th>ISIN</th><th>Company Name</th><th>1 Year Performance</th><th>Sector</th><th>Description</th></tr>"
+            for row in table_data[0:]:
+                html_table += "<tr>"
+                for cell in row:
+                    html_table += f"<td>{cell}</td>"
+                html_table += "</tr>"
+            html_table += "</table>"
+            st.markdown(html_table, unsafe_allow_html=True)
+            max_row = max(yldlist, key=lambda x: x[1])
+            max_value = max(max_row[1], ytd_value_in)
+
+            if max_value == ytd_value_in:
+                ytd_final = user_input
+                ytd_value_final = max_value
+            else:
+                ytd_final = max_row[0]
+                ytd_value_final = max_value
+            
+
+            st.success(f"""
+            Based on performance (YTD) , the best fund  is the "**{ytd_final}**" with a return of "**{ytd_value_final}%**" Year to date.
+            \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. """)
+                
     if st.button('STOCK'):
        
         if len(user_input) >= 5:
