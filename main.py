@@ -114,7 +114,7 @@ def mf_sector(sector):
     )
     generated_text = response['choices'][0]['message']['content']
     print("generated_text = ",generated_text)
-    pattern = re.compile(r'(?i)focuses\s(?:on\s(?:the\s)?)?(\w+(?:\s\w+)*)')
+    pattern = re.compile(r'(?i)focuses\s(?:on\s(?:the\s)?)?(.*)')
     match = re.search(pattern, generated_text)
     if match != None:
         match = match.group(1).capitalize().strip(".")
