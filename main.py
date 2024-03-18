@@ -144,6 +144,12 @@ def etfname(userinput):
     url = f"https://financialmodelingprep.com/api/v3/search-name?query={userinput}&apikey={api_key}"
     response = requests.get(url)
     return response.json()
+
+def NameFromISIN(userinput):
+    api_key = "7fd525b1eb69a710a24dd46dc1080e99"
+    url = f"https://financialmodelingprep.com/api/v4/search/isin?isin={userinput}&apikey={api_key}"
+    response = requests.get(url)
+    return response.json()
  
  
  
@@ -167,17 +173,24 @@ def main():
 
     
     if st.button('ETF'):
-       
+
         if len(user_input) > 5:
+            if any(i.isdigit() for i in user_input)==True:
+                try:
+                    user_input = NameFromISIN(user_input)[0]['symbol']
+                except Exception as e:
+                    st.error(f"Can't find {user_input} ISIN, Please enter the ticker name.")
+            else:
                 try:
                     user_input = etfname(user_input)[0]['symbol']
                 except Exception as e:
                     st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
        
+
         try:        
             ytd_value_in = ytdValue(user_input)[0]['1Y']
             Userisin = ytdDescription(user_input)[0]['isin']
-            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {etf_sector(user_input).replace(".",",")} It can be compared with below """)
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {etf_sector(user_input).replace(".",",")}. {ytdDescription(user_input.strip())[0]['description']}. It can be compared with below """)
             st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done for last 365 days</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
@@ -227,17 +240,23 @@ def main():
             \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. """)
 
     if st.button('Mutual Fund'):
-        
         if len(user_input) > 5:
-            try:
-                user_input = etfname(user_input)[0]['symbol']
-            except Exception as e:
-                st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
+            if any(i.isdigit() for i in user_input)==True:
+                try:
+                    user_input = NameFromISIN(user_input)[0]['symbol']
+                except Exception as e:
+                    st.error(f"Can't find {user_input} ISIN, Please enter the ticker name.")
+            else:
+                try:
+                    user_input = etfname(user_input)[0]['symbol']
+                except Exception as e:
+                    st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
+        
 
         try:        
             ytd_value_in = ytdValue(user_input)[0]['1Y']
             Userisin = ytdDescription(user_input)[0]['isin']
-            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {mf_sector(user_input).replace(".",",")} It can be compared with below """)
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {mf_sector(user_input).replace(".",",")}. {ytdDescription(user_input.strip())[0]['description']}. It can be compared with below """)
             st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done for last 365 days</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
@@ -288,17 +307,24 @@ def main():
             \nDisclaimer -  Investor should consider the risk associated and do there own risk analysis/consult there financial advisor before taking up the decision. """)
                 
     if st.button('STOCK'):
-       
-        if len(user_input) >= 5:
+        if len(user_input) > 5:
+            if any(i.isdigit() for i in user_input)==True:
+                try:
+                    user_input = NameFromISIN(user_input)[0]['symbol']
+                except Exception as e:
+                    st.error(f"Can't find {user_input} ISIN, Please enter the ticker name.")
+            else:
                 try:
                     user_input = etfname(user_input)[0]['symbol']
                 except Exception as e:
                     st.error(f"Can't find {user_input} ticker name, Please enter the ticker name.")
        
+       
+       
         try:        
             ytd_value_in = stock_price_change(user_input)[0]['1Y']
             Userisin = ytdDescription(user_input)[0]['isin']
-            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {stock_sector(user_input).replace(".",",")} It can be compared with below """)
+            st.success(f"""The YTD value for {user_input} ({Userisin}) is  {ytd_value_in}%, It focuses on the {stock_sector(user_input).replace(".",",")}. {ytdDescription(user_input.strip())[0]['description']}. It can be compared with below """)
             st.write('<p style= "color: red"> DISCLAIMER : *YTD Calculation is done for last 365 days</p>',unsafe_allow_html=True)
         except Exception as e:
             print(e)
